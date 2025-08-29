@@ -1,31 +1,79 @@
 <!DOCTYPE html>
 <html lang="de">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notizen</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-
+    <head>
+        <meta charset="UTF-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Notes</title>
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    </head>
 <body>
-
-    <div id="datetime"></div>
-    <header>
-         <div>
-        
-            <div class="header-box" >
-
-            <h1>Notizen</h1>
+    <div id="app">
+        <h1>Notizen</h1>
+        <input type="color" v-model="color" id="colorPicker" value="#ffffff">
+        <input v-model="title" placeholder="Titel" />
+        <textarea v-model="content" placeholder="Notiz"></textarea>
+        <button @click="addNote">Bestätigen!</button>
+        <div id="container">
+            <div class="note" v-for="(note, index) in notes" :key="index" :style="{ backgroundColor: note.color, boxShadow: note.shadow }">
+                <span class="delete" @click="deleteNote(index)">X</span>
+                <h2>{{ note.title }}</h2>
+                <p>{{ note.text }}</p>
+            </div>
         </div>
-        </div>
-    </header>
-    <input type="color" id="colorPicker" value="#ffffff">
-    <textarea id="noteTitle" placeholder="Titel"></textarea>
-    <textarea id="noteContent" placeholder="Notiz"></textarea>
-    <button onclick="addNote()">Bestätigen</button>
     </div>
-    <script src="index.js"></script>
-</body>
 
+    <script src="https://unpkg.com/vue@3.0.11/dist/vue.global.prod.js"></script>
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    color: '#ffffff',
+                    title: '',
+                    content: '',
+                    notes: [],
+                };
+            },
+            methods: {
+                addNote() {
+                    if (!this.title || !this.content) {
+                        alert('Bitte Titel und Notiz eingeben.');
+                        return;
+                    }
+
+                    this.notes.push({
+                        color: this.color,
+                        title: this.title,
+                        text: this.content,
+                        shadow: '1px 1px 4px 1px #000',
+                    });
+
+                    this.clearInputFields();
+                    this.saveNotes();
+                },
+                deleteNote(index) {
+                    this.notes.splice(index, 1);
+                    this.saveNotes();
+                },
+                clearInputFields() {
+                    this.color = '#ffffff';
+                    this.title = '';
+                    this.content = '';
+                },
+                saveNotes() {
+                    localStorage.setItem('notes', JSON.stringify(this.notes));
+                },
+                loadNotes() {
+                    const savedNotes = JSON.parse(localStorage.getItem('notes')) || [];
+                    this.notes = savedNotes;
+                },
+            },
+            created() {
+                this.loadNotes();
+            },
+        });
+
+        app.mount('#app');
+    </script>
+</body>
 </html>
